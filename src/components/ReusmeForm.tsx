@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
+
+import ScoreCard from "./ScoreCard";
+import AnalysisCard from "./AnalysisCard";
+import InterviewQuestions from "./InterviewQuestions";
+import ResumeChat from "./ResumeChat";
 
 type Question = {
   type: string;
@@ -76,6 +80,8 @@ export default function ResumeForm() {
   }
 
   async function analyzeResume() {
+
+
     if (!resumeText) {
       alert("Upload resume first");
       return;
@@ -101,6 +107,10 @@ export default function ResumeForm() {
       });
 
       const data = await res.json();
+
+      console.log("FULL DATA:", data);
+      console.log("QUESTIONS:", data.questions);
+      console.log("FIRST QUESTION:", data.questions?.[0]);
 
       setResult(data);
     } catch (error) {
@@ -157,216 +167,169 @@ export default function ResumeForm() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Upload */}
+    <div className="space-y-12">
 
-      <div className="space-y-3">
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        />
+      {/* Upload Section */}
 
-        <button
-          onClick={uploadResume}
-          className="bg-black text-white px-5 py-2 rounded"
-        >
-          {uploading ? "Uploading..." : "Upload Resume"}
-        </button>
+      <div className="grid lg:grid-cols-2 gap-8">
+
+        <div className="bg-white rounded-4xl border border-slate-200 p-8 shadow-xl shadow-blue-100/30">
+
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900">
+              Upload Resume
+            </h2>
+
+            <p className="text-slate-500 mt-2">
+              Upload your PDF resume for AI analysis.
+            </p>
+          </div>
+
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={(e) =>
+              setFile(e.target.files?.[0] ?? null)
+            }
+            className="w-full border border-slate-300 rounded-2xl p-4 bg-slate-50"
+          />
+
+          <button
+            onClick={uploadResume}
+            className="mt-6 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-semibold shadow-lg"
+          >
+            {uploading
+              ? "Uploading..."
+              : "Upload Resume"}
+          </button>
+
+        </div>
+
+        <div className="bg-white rounded-4xl border border-slate-200 p-8 shadow-xl shadow-blue-100/30">
+
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900">
+              Job Description
+            </h2>
+
+            <p className="text-slate-500 mt-2">
+              Paste the target job description.
+            </p>
+          </div>
+
+          <textarea
+            className="w-full h-72 border border-slate-300 rounded-2xl p-5 bg-slate-50 resize-none"
+            placeholder="Paste Job Description..."
+            value={jobDescription}
+            onChange={(e) =>
+              setJobDescription(
+                e.target.value
+              )
+            }
+          />
+
+        </div>
+
       </div>
 
-      {/* Job Description */}
+      {/* Analyze Button */}
 
-      <textarea
-        className="w-full border p-4 h-60 rounded"
-        placeholder="Paste Job Description"
-        value={jobDescription}
-        onChange={(e) => setJobDescription(e.target.value)}
-      />
+      <div className="flex justify-center">
 
-      <button
-        onClick={analyzeResume}
-        className="bg-green-600 text-white px-5 py-2 rounded"
-      >
-        Analyze Resume
-      </button>
+        <button
+          onClick={analyzeResume}
+          className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-5 rounded-2xl font-bold text-lg shadow-xl"
+        >
+          {loading
+            ? "Analyzing Resume..."
+            : "Analyze Resume"}
+        </button>
 
-      {loading && <p className="text-lg">Analyzing...</p>}
+      </div>
 
-      {/* Analysis */}
+      {/* Results */}
 
       {result && (
-        <div className="space-y-8">
+        <div className="space-y-10">
+
           {/* Scores */}
 
-          <div className="space-y-6">
-            <div>
-              <h2 className="font-bold text-xl">
-                Match Score:
-                {result.matchScore}/100
-              </h2>
+          <div className="grid md:grid-cols-2 gap-8">
 
-              <div className="w-full bg-gray-200 rounded h-4">
-                <div
-                  className="bg-green-500 h-4 rounded"
-                  style={{
-                    width: `${result.atsScore}%`,
-                  }}
-                />
-              </div>
-            </div>
+            <ScoreCard
+              title="ATS Score"
+              value={result.atsScore}
+              color="text-blue-600"
+            />
 
-            <div>
-              <h2 className="font-bold text-xl">
-                Match Score: {result.matchScore}/100
-              </h2>
+            <ScoreCard
+              title="Job Match"
+              value={result.matchScore}
+              color="text-emerald-600"
+            />
 
-              <div className="w-full bg-gray-200 rounded h-4">
-                <div
-                  className="bg-blue-500 h-4 rounded"
-                  style={{
-                    width: `${result.matchScore}%`,
-                  }}
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Strengths */}
+          {/* Summary */}
 
-          <div>
-            <h2 className="text-2xl font-bold mb-3">Strengths</h2>
+          <div className="bg-white rounded-4xl border border-slate-200 p-8 shadow-xl">
 
-            <ul className="list-disc ml-6">
-              {result.strengths?.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <h2 className="text-2xl font-bold mb-5">
+              AI Summary
+            </h2>
+
+            <p className="text-slate-600 leading-8 text-lg">
+              {result.summary}
+            </p>
+
           </div>
 
-          {/* Weaknesses */}
+          {/* Analysis */}
 
-          <div>
-            <h2 className="text-2xl font-bold mb-3">Weaknesses</h2>
+          <div className="grid lg:grid-cols-2 gap-8">
 
-            <ul className="list-disc ml-6">
-              {result.weaknesses?.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <AnalysisCard
+              title="Strengths"
+              items={result.strengths}
+            />
+
+            <AnalysisCard
+              title="Weaknesses"
+              items={result.weaknesses}
+            />
+
+            <AnalysisCard
+              title="Missing Skills"
+              items={result.missingSkills}
+            />
+
+            <AnalysisCard
+              title="ATS Improvements"
+              items={result.atsImprovements}
+            />
+
           </div>
 
-          {/* Missing Skills */}
+          <AnalysisCard
+            title="Recommendations"
+            items={result.suggestions}
+          />
 
-          <div>
-            <h2 className="text-2xl font-bold mb-3">Missing Skills</h2>
+          <InterviewQuestions
+            questions={result.questions}
+          />
 
-            <ul className="list-disc ml-6">
-              {result.missingSkills?.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
+          <ResumeChat
+            messages={messages}
+            question={question}
+            setQuestion={setQuestion}
+            askQuestion={askQuestion}
+            chatLoading={chatLoading}
+          />
 
-          {/* Suggestions */}
-
-          <div>
-            <h2 className="text-2xl font-bold mb-3">Suggestions</h2>
-
-            <ul className="list-disc ml-6">
-              {result.suggestions?.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Interview Questions */}
-
-          <div>
-            <h2 className="text-2xl font-bold mb-3">Interview Questions</h2>
-
-            <ul className="list-decimal ml-6">
-              {result.questions?.map((item, index) => (
-                <li key={index}>
-                  <span className="font-semibold">[{item.type}]</span>{" "}
-                  {item.question}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Resume Chatbot */}
-
-          <div className="border rounded-3xl p-6 bg-zinc-950 border-zinc-800">
-            <h2 className="text-3xl font-bold mb-6">Resume Assistant</h2>
-
-            <div className="h-125 overflow-y-auto rounded-2xl border border-zinc-800 p-4 space-y-4 bg-zinc-900">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] px-4 py-3 rounded-2xl ${
-                      message.role === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-zinc-800 text-white"
-                    }`}
-                  >
-                    <ReactMarkdown
-                      components={{
-                        ul: ({ children }) => (
-                          <ul className="list-disc ml-5">{children}</ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="list-decimal ml-5">{children}</ol>
-                        ),
-                        strong: ({ children }) => (
-                          <strong className="font-bold">{children}</strong>
-                        ),
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              ))}
-
-              {chatLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-zinc-800 px-4 py-3 rounded-2xl">
-                    Thinking...
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-3 mt-4">
-              <input
-                type="text"
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    askQuestion();
-                  }
-                }}
-                placeholder="Ask anything about the resume..."
-                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 outline-none"
-              />
-
-              <button
-                onClick={askQuestion}
-                className="bg-blue-600 hover:bg-blue-700 px-6 rounded-xl"
-              >
-                Send
-              </button>
-            </div>
-          </div>
         </div>
       )}
+
     </div>
   );
 }

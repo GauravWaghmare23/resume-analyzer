@@ -1,15 +1,21 @@
+import Hero from "../components/Hero";
+import Navbar from "../components/Navbar";
 import ResumeForm from "../components/ReusmeForm";
-
-
 
 export default function Home() {
   return (
-    <main className="max-w-6xl mx-auto p-10">
-      <h1 className="text-4xl font-bold mb-10">
-        AI Resume Analyzer
-      </h1>
+    <main className="min-h-screen bg-slate-50">
 
-      <ResumeForm />
+      <Navbar />
+
+      <div className="max-w-7xl mx-auto px-6 py-10">
+
+        <Hero />
+
+        <ResumeForm />
+
+      </div>
+
     </main>
   );
 }
